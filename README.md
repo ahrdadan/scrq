@@ -4,7 +4,7 @@
 [![Build](https://github.com/ahrdadan/scrq/actions/workflows/ci.yml/badge.svg)](https://github.com/ahrdadan/scrq/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/ahrdadan/scrq)](https://github.com/ahrdadan/scrq/releases)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/ahrdadan/scrq)](go.mod)
-[![Docker](https://img.shields.io/docker/pulls/ahrdadan/scrq)](https://hub.docker.com/r/ahrdadan/scrq)
+[![GHCR](https://img.shields.io/badge/ghcr.io-container-blue)](https://github.com/ahrdadan/scrq/pkgs/container/scrq)
 
 **Scrq** (Scrape + Queue) — Asynchronous web scraping API built with Go, Fiber, Rod, and Lightpanda.
 
@@ -44,8 +44,8 @@ chmod +x scrq-linux-amd64
 ### Docker
 
 ```bash
-docker pull ahrdadan/scrq:latest
-docker run -p 8000:8000 ahrdadan/scrq:latest
+docker pull ghcr.io/ahrdadan/scrq:latest
+docker run -p 8000:8000 ghcr.io/ahrdadan/scrq:latest
 ```
 
 ### Build from Source
