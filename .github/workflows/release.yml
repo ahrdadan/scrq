@@ -9,6 +9,9 @@ permissions:
   contents: write
   packages: write
 
+env:
+  GOPRIVATE: github.com/ahrdadan/scrq
+
 jobs:
   build:
     name: Build and Release
@@ -28,6 +31,11 @@ jobs:
       - name: Get version from tag
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Verify module
+        run: |
+          go mod verify
+          go mod download
 
       - name: Run tests
         run: go test -v ./...
