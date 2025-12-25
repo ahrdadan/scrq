@@ -53,10 +53,10 @@ __debug_bin
 # Scrq data
 data/
 bin/nats-server*
-browser/lightpanda*
+/browser/lightpanda*
 
 # Browser files
-browser/
+/browser/
 
 # cache
 .cache/
