@@ -108,10 +108,14 @@ Creates a new asynchronous scraping job.
     "job_id": "job_123abc",
     "status": "queued",
     "status_url": "/scrq/jobs/job_123abc",
+    "status_url_full": "http://localhost:8000/scrq/jobs/job_123abc",
     "result_url": "/scrq/jobs/job_123abc/result",
+    "result_url_full": "http://localhost:8000/scrq/jobs/job_123abc/result",
     "events": {
       "sse_url": "/scrq/jobs/job_123abc/events",
-      "ws_url": "/scrq/ws?job_id=job_123abc"
+      "sse_url_full": "http://localhost:8000/scrq/jobs/job_123abc/events",
+      "ws_url": "/scrq/ws?job_id=job_123abc",
+      "ws_url_full": "http://localhost:8000/scrq/ws?job_id=job_123abc"
     }
   }
 }

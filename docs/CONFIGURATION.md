@@ -10,10 +10,11 @@ Scrq supports the following command-line flags:
 
 ### Server Configuration
 
-| Flag     | Default   | Description                     |
-| -------- | --------- | ------------------------------- |
-| `--host` | `0.0.0.0` | Host address to bind the server |
-| `--port` | `8000`    | Port number for the server      |
+| Flag         | Default                   | Description                                            |
+| ------------ | ------------------------- | ------------------------------------------------------ |
+| `--host`     | `0.0.0.0`                 | Host address to bind the server                        |
+| `--port`     | `8000`                    | Port number for the server                             |
+| `--base-url` | `http://localhost:8000`   | Base URL for full URLs in API responses (auto-detect)  |
 
 ### Browser (Lightpanda CDP)
 

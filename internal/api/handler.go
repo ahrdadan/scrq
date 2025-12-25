@@ -118,7 +118,6 @@ func (h *Handler) FetchPage(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	// Convert screenshot to base64 if present
 	response := map[string]interface{}{
 		"url":   result.URL,
 		"title": result.Title,
@@ -129,6 +128,7 @@ func (h *Handler) FetchPage(c *fiber.Ctx) error {
 
 	if len(result.Screenshot) > 0 {
 		response["screenshot"] = base64.StdEncoding.EncodeToString(result.Screenshot)
+		response["screenshot_format"] = "png"
 	}
 
 	return c.JSON(Response{
@@ -466,4 +466,3 @@ func (h *Handler) BatchScrape(c *fiber.Ctx) error {
 		},
 	})
 }
-

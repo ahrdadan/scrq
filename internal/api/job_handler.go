@@ -16,6 +16,7 @@ import (
 type JobHandler struct {
 	queueManager     *queue.Manager
 	idempotencyStore *security.IdempotencyStore
+	baseURL          string
 }
 
 // NewJobHandler creates a new job handler
@@ -23,6 +24,7 @@ func NewJobHandler(qm *queue.Manager) *JobHandler {
 	return &JobHandler{
 		queueManager:     qm,
 		idempotencyStore: security.NewIdempotencyStore(24 * time.Hour), // 24h TTL for idempotency keys
+		baseURL:          "",
 	}
 }
 
@@ -31,6 +33,16 @@ func NewJobHandlerWithSecurity(qm *queue.Manager, idempotencyStore *security.Ide
 	return &JobHandler{
 		queueManager:     qm,
 		idempotencyStore: idempotencyStore,
+		baseURL:          "",
+	}
+}
+
+// NewJobHandlerWithConfig creates a new job handler with security store and base URL
+func NewJobHandlerWithConfig(qm *queue.Manager, idempotencyStore *security.IdempotencyStore, baseURL string) *JobHandler {
+	return &JobHandler{
+		queueManager:     qm,
+		idempotencyStore: idempotencyStore,
+		baseURL:          baseURL,
 	}
 }
 
@@ -113,13 +125,17 @@ func (h *JobHandler) CreateJob(c *fiber.Ctx) error {
 	}
 
 	response := queue.JobCreatedResponse{
-		JobID:     enqueuedJob.ID,
-		Status:    enqueuedJob.Status,
-		StatusURL: fmt.Sprintf("/scrq/jobs/%s", enqueuedJob.ID),
-		ResultURL: fmt.Sprintf("/scrq/jobs/%s/result", enqueuedJob.ID),
+		JobID:         enqueuedJob.ID,
+		Status:        enqueuedJob.Status,
+		StatusURL:     fmt.Sprintf("/scrq/jobs/%s", enqueuedJob.ID),
+		StatusURLFull: fmt.Sprintf("%s/scrq/jobs/%s", h.baseURL, enqueuedJob.ID),
+		ResultURL:     fmt.Sprintf("/scrq/jobs/%s/result", enqueuedJob.ID),
+		ResultURLFull: fmt.Sprintf("%s/scrq/jobs/%s/result", h.baseURL, enqueuedJob.ID),
 	}
 	response.Events.SSEURL = fmt.Sprintf("/scrq/jobs/%s/events", enqueuedJob.ID)
+	response.Events.SSEURLFull = fmt.Sprintf("%s/scrq/jobs/%s/events", h.baseURL, enqueuedJob.ID)
 	response.Events.WSURL = fmt.Sprintf("/scrq/ws?job_id=%s", enqueuedJob.ID)
+	response.Events.WSURLFull = fmt.Sprintf("%s/scrq/ws?job_id=%s", h.baseURL, enqueuedJob.ID)
 
 	// Cache response for idempotency
 	if idempotencyKey != "" && h.idempotencyStore != nil && !wasDuplicate {

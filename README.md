@@ -137,10 +137,14 @@ Response (202 Accepted):
     "job_id": "job_abc123",
     "status": "queued",
     "status_url": "/scrq/jobs/job_abc123",
+    "status_url_full": "http://localhost:8000/scrq/jobs/job_abc123",
     "result_url": "/scrq/jobs/job_abc123/result",
+    "result_url_full": "http://localhost:8000/scrq/jobs/job_abc123/result",
     "events": {
       "sse_url": "/scrq/jobs/job_abc123/events",
-      "ws_url": "/scrq/ws?job_id=job_abc123"
+      "sse_url_full": "http://localhost:8000/scrq/jobs/job_abc123/events",
+      "ws_url": "/scrq/ws?job_id=job_abc123",
+      "ws_url_full": "http://localhost:8000/scrq/ws?job_id=job_abc123"
     }
   }
 }
@@ -174,10 +178,11 @@ curl -X POST http://localhost:8000/scrq/page/fetch \
   -H "Content-Type: application/json" \
   -d '{"url": "https://example.com"}'
 
-# Take screenshot
+# Take screenshot (returns raw PNG image)
 curl -X POST http://localhost:8000/scrq/page/screenshot \
   -H "Content-Type: application/json" \
-  -d '{"url": "https://example.com"}'
+  -d '{"url": "https://example.com"}' \
+  --output screenshot.png
 
 # Execute script
 curl -X POST http://localhost:8000/scrq/page/evaluate \

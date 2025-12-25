@@ -17,8 +17,9 @@ const (
 // Config holds all configuration options for the Scrq server
 type Config struct {
 	// Server
-	Host string
-	Port int
+	Host    string
+	Port    int
+	BaseURL string // Full base URL for API responses (e.g., http://localhost:8000)
 
 	// Browser (Lightpanda CDP)
 	BrowserHost string
@@ -53,6 +54,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		Host:              "0.0.0.0",
 		Port:              8000,
+		BaseURL:           "", // Will be auto-generated if empty
 		BrowserHost:       "127.0.0.1",
 		BrowserPort:       9222,
 		WithChrome:        false,
@@ -80,6 +82,7 @@ func ParseFlags() *Config {
 	// Server flags
 	flag.StringVar(&cfg.Host, "host", cfg.Host, "Host address to bind the server")
 	flag.IntVar(&cfg.Port, "port", cfg.Port, "Port number for the server")
+	flag.StringVar(&cfg.BaseURL, "base-url", cfg.BaseURL, "Base URL for API responses (e.g., http://localhost:8000)")
 
 	// Browser flags
 	flag.StringVar(&cfg.BrowserHost, "browser-host", cfg.BrowserHost, "Lightpanda browser CDP host")
@@ -111,6 +114,15 @@ func ParseFlags() *Config {
 
 	flag.Parse()
 
+	// Auto-generate BaseURL if not provided
+	if cfg.BaseURL == "" {
+		host := cfg.Host
+		if host == "0.0.0.0" {
+			host = "localhost"
+		}
+		cfg.BaseURL = fmt.Sprintf("http://%s:%d", host, cfg.Port)
+	}
+
 	// Validate
 	if cfg.MaxRetries < 1 {
 		cfg.MaxRetries = 1
@@ -140,6 +152,7 @@ Usage:
 Server:
   --host            %s
   --port            %d
+  --base-url        %s (auto-generated if empty)
 
 Browser (Lightpanda CDP):
   --browser-host    %s
@@ -165,7 +178,7 @@ Other:
   --help            show this help
 
 `, AppName, Version,
-		"0.0.0.0", 8000,
+		"0.0.0.0", 8000, "http://localhost:8000",
 		"127.0.0.1", 9222,
 		false, 0,
 		true, "nats://127.0.0.1:4222", "./data/nats", true, "./bin/nats-server",

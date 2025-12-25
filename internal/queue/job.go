@@ -291,13 +291,17 @@ type JobResultResponse struct {
 
 // JobCreatedResponse represents the response when a job is created
 type JobCreatedResponse struct {
-	JobID     string    `json:"job_id"`
-	Status    JobStatus `json:"status"`
-	StatusURL string    `json:"status_url"`
-	ResultURL string    `json:"result_url"`
-	Events    struct {
-		SSEURL string `json:"sse_url"`
-		WSURL  string `json:"ws_url"`
+	JobID         string    `json:"job_id"`
+	Status        JobStatus `json:"status"`
+	StatusURL     string    `json:"status_url"`
+	StatusURLFull string    `json:"status_url_full"`
+	ResultURL     string    `json:"result_url"`
+	ResultURLFull string    `json:"result_url_full"`
+	Events        struct {
+		SSEURL     string `json:"sse_url"`
+		SSEURLFull string `json:"sse_url_full"`
+		WSURL      string `json:"ws_url"`
+		WSURLFull  string `json:"ws_url_full"`
 	} `json:"events"`
 }
 

@@ -167,6 +167,7 @@ func main() {
 			RateLimitRequests: cfg.RateLimitRequests,
 			RateLimitWindow:   cfg.RateLimitWindow,
 			IdempotencyTTL:    cfg.IdempotencyTTL,
+			BaseURL:           cfg.BaseURL,
 		}
 		api.SetupJobRoutesWithConfig(app, queueManager, routeConfig)
 	}

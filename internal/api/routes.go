@@ -32,6 +32,7 @@ type RouteConfig struct {
 	RateLimitRequests int           // requests per window
 	RateLimitWindow   time.Duration // time window
 	IdempotencyTTL    time.Duration // TTL for idempotency keys
+	BaseURL           string        // Base URL for full URLs in responses
 }
 
 // DefaultRouteConfig returns default route configuration
@@ -40,6 +41,7 @@ func DefaultRouteConfig() RouteConfig {
 		RateLimitRequests: 100,
 		RateLimitWindow:   time.Minute,
 		IdempotencyTTL:    24 * time.Hour,
+		BaseURL:           "http://localhost:8000",
 	}
 }
 
@@ -58,7 +60,7 @@ func SetupJobRoutesWithConfig(app *fiber.App, queueManager *queue.Manager, confi
 	})
 	idempotencyStore := security.NewIdempotencyStore(config.IdempotencyTTL)
 
-	jobHandler := NewJobHandlerWithSecurity(queueManager, idempotencyStore)
+	jobHandler := NewJobHandlerWithConfig(queueManager, idempotencyStore, config.BaseURL)
 
 	// Create security middleware
 	secMiddleware := security.NewMiddleware(rateLimiter, idempotencyStore)
