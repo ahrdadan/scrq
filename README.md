@@ -281,7 +281,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [NATS](https://nats.io/) - Cloud native messaging system
 
 With tags
+go mod tidy
 git add .
-git commit -m "first"
-git tag v1.0.0
-git push origin v1.0.0
+git commit -m "fix: add go mod tidy to CI workflows"
+git push origin main
+git tag -f v1.0.0
+git push origin v1.0.0 --force
