@@ -1,153 +1,101 @@
 package browser
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"os/exec"
+	"log"
+	"os"
+	"path/filepath"
 	"runtime"
 
 	"github.com/go-rod/rod/lib/launcher"
 )
 
-// InstallChrome downloads a Chromium build for the current OS/arch and installs deps if needed.
-func InstallChrome(ctx context.Context, revision int) (string, error) {
-	if err := InstallChromeDependencies(ctx); err != nil {
-		return "", err
+// GetChromeDownloadDir returns the directory where Chrome will be downloaded
+func GetChromeDownloadDir() string {
+	// Try to get user cache directory first
+	cacheDir, err := os.UserCacheDir()
+	if err == nil {
+		return filepath.Join(cacheDir, "rod", "browser")
 	}
 
+	// Fallback to temp directory
+	return filepath.Join(os.TempDir(), "rod", "browser")
+}
+
+// InstallChrome downloads a Chromium build for the current OS/arch as portable binary.
+// No package manager (apt/dnf/yum) is used - pure binary download.
+func InstallChrome(ctx context.Context, revision int) (string, error) {
+	log.Printf("Installing Chrome browser (OS: %s, Arch: %s)", runtime.GOOS, runtime.GOARCH)
+
+	// Create browser download directory
+	downloadDir := GetChromeDownloadDir()
+	if err := os.MkdirAll(downloadDir, 0755); err != nil {
+		return "", fmt.Errorf("failed to create browser directory: %w", err)
+	}
+
+	// Use go-rod's built-in downloader which downloads portable Chrome/Chromium
+	// This does NOT use apt or any package manager - it downloads the binary directly
 	downloader := launcher.NewBrowser()
 	downloader.Context = ctx
+
+	// Set custom download directory
+	downloader.RootDir = downloadDir
+
 	if revision > 0 {
 		downloader.Revision = revision
 	}
+
+	log.Printf("Downloading Chrome to: %s", downloadDir)
 
 	path, err := downloader.Get()
 	if err != nil {
 		return "", fmt.Errorf("failed to download chrome: %w", err)
 	}
 
+	// Ensure the binary is executable (for Linux/macOS)
+	if runtime.GOOS != "windows" {
+		if info, err := os.Stat(path); err == nil {
+			if err := ensureChromeExecutable(path, info); err != nil {
+				log.Printf("Warning: Failed to set executable permissions: %v", err)
+			}
+		}
+	}
+
+	log.Printf("Chrome browser installed at: %s", path)
 	return path, nil
 }
 
-// InstallChromeDependencies installs OS packages required by Chromium.
-func InstallChromeDependencies(ctx context.Context) error {
-	if runtime.GOOS != "linux" {
-		return nil
+// ensureChromeExecutable ensures the Chrome binary has executable permissions
+func ensureChromeExecutable(path string, info os.FileInfo) error {
+	mode := info.Mode()
+	if mode&0111 != 0 {
+		return nil // Already executable
 	}
 
-	if path, _ := exec.LookPath("apt-get"); path != "" {
-		if err := runCommand(ctx, path, "update"); err != nil {
-			return err
-		}
-		args := append([]string{"install", "-y", "--no-install-recommends"}, chromeDepsApt...)
-		return runCommand(ctx, path, args...)
+	newMode := mode | 0755
+	if err := os.Chmod(path, newMode); err != nil {
+		return fmt.Errorf("failed to chmod %s: %w", path, err)
 	}
-
-	if path, _ := exec.LookPath("dnf"); path != "" {
-		args := append([]string{"install", "-y"}, chromeDepsDnf...)
-		return runCommand(ctx, path, args...)
-	}
-
-	if path, _ := exec.LookPath("yum"); path != "" {
-		args := append([]string{"install", "-y"}, chromeDepsYum...)
-		return runCommand(ctx, path, args...)
-	}
-
-	if path, _ := exec.LookPath("apk"); path != "" {
-		args := append([]string{"add", "--no-cache"}, chromeDepsApk...)
-		return runCommand(ctx, path, args...)
-	}
-
-	return fmt.Errorf("no supported package manager found for Chrome dependencies")
-}
-
-func runCommand(ctx context.Context, name string, args ...string) error {
-	cmd := exec.CommandContext(ctx, name, args...)
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &out
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("%s %v failed: %w\n%s", name, args, err, out.String())
-	}
+	log.Printf("Set executable permissions on %s", path)
 	return nil
 }
 
-var chromeDepsApt = []string{
-	"ca-certificates",
-	"fonts-liberation",
-	"libasound2",
-	"libatk-bridge2.0-0",
-	"libatk1.0-0",
-	"libcups2",
-	"libdbus-1-3",
-	"libdrm2",
-	"libgbm1",
-	"libgtk-3-0",
-	"libnspr4",
-	"libnss3",
-	"libx11-xcb1",
-	"libxcomposite1",
-	"libxdamage1",
-	"libxfixes3",
-	"libxrandr2",
-	"libxshmfence1",
-	"libxss1",
-	"libxtst6",
-	"libpango-1.0-0",
-	"libpangocairo-1.0-0",
-	"libxkbcommon0",
-}
+// GetChromePath returns the path to an existing Chrome installation if available
+func GetChromePath() (string, bool) {
+	downloadDir := GetChromeDownloadDir()
 
-var chromeDepsDnf = []string{
-	"alsa-lib",
-	"atk",
-	"cups-libs",
-	"gtk3",
-	"libX11",
-	"libXcomposite",
-	"libXdamage",
-	"libXrandr",
-	"libXfixes",
-	"libX11-xcb",
-	"libxcb",
-	"libxkbcommon",
-	"libxshmfence",
-	"nss",
-	"nspr",
-	"pango",
-	"mesa-libgbm",
-	"libdrm",
-}
+	// Check if Chrome is already downloaded
+	downloader := launcher.NewBrowser()
+	downloader.RootDir = downloadDir
 
-var chromeDepsYum = chromeDepsDnf
+	// Try to find existing Chrome binary using BinPath
+	chromePath := downloader.BinPath()
+	if chromePath != "" {
+		if _, err := os.Stat(chromePath); err == nil {
+			return chromePath, true
+		}
+	}
 
-var chromeDepsApk = []string{
-	"ca-certificates",
-	"freetype",
-	"harfbuzz",
-	"nss",
-	"ttf-freefont",
-	"alsa-lib",
-	"atk",
-	"at-spi2-atk",
-	"cups-libs",
-	"libxcomposite",
-	"libxdamage",
-	"libxrandr",
-	"libxfixes",
-	"libxkbcommon",
-	"libx11",
-	"libxrender",
-	"libxext",
-	"libxcb",
-	"libdrm",
-	"mesa-gbm",
-	"gtk+3.0",
-	"pango",
-	"cairo",
-	"gdk-pixbuf",
-	"fontconfig",
-	"libstdc++",
-	"libgcc",
+	return "", false
 }

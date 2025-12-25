@@ -4,7 +4,7 @@
 [![Build](https://github.com/ahrdadan/scrq/actions/workflows/ci.yml/badge.svg)](https://github.com/ahrdadan/scrq/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/ahrdadan/scrq)](https://github.com/ahrdadan/scrq/releases)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/ahrdadan/scrq)](go.mod)
-[![GHCR](https://img.shields.io/badge/ghcr.io-container-blue)](https://github.com/ahrdadan/scrq/pkgs/container/scrq)
+[![GHCR](https://img.shields.io/badge/ghcr.io-container-blue)](https://github.com/users/ahrdadan/packages/container/package/scrq)
 
 **Scrq** (Scrape + Queue) — Asynchronous web scraping API built with Go, Fiber, Rod, and Lightpanda.
 
@@ -283,7 +283,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 With tags
 go mod tidy
 git add .
-git commit -m "fix: add go mod tidy to CI workflows"
+git commit -m "fix: chrome download binary"
 git push origin main
 git tag -f v1.0.0
 git push origin v1.0.0 --force

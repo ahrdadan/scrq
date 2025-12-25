@@ -50,7 +50,11 @@ func EnsureLightpandaBinary() (string, bool, error) {
 	for _, searchPath := range searchPaths {
 		for _, binaryName := range binaryNames {
 			fullPath := filepath.Join(searchPath, binaryName)
-			if _, err := os.Stat(fullPath); err == nil {
+			if info, err := os.Stat(fullPath); err == nil {
+				// Ensure file is executable
+				if err := ensureExecutable(fullPath, info); err != nil {
+					log.Printf("Warning: Failed to ensure executable permissions: %v", err)
+				}
 				log.Printf("Lightpanda browser found at %s", fullPath)
 				return fullPath, true, nil
 			}
@@ -112,5 +116,23 @@ func downloadLightpanda(destPath string) error {
 	}
 
 	log.Printf("Lightpanda browser downloaded and installed at %s", destPath)
+	return nil
+}
+
+// ensureExecutable ensures the file has executable permissions
+func ensureExecutable(path string, info os.FileInfo) error {
+	// Check if file is already executable
+	mode := info.Mode()
+	if mode&0111 != 0 {
+		// Already has execute permission
+		return nil
+	}
+
+	// Add execute permission for owner, group, and others
+	newMode := mode | 0755
+	if err := os.Chmod(path, newMode); err != nil {
+		return fmt.Errorf("failed to chmod %s: %w", path, err)
+	}
+	log.Printf("Set executable permissions on %s", path)
 	return nil
 }
