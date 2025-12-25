@@ -100,7 +100,7 @@ func (s *Server) Start(ctx context.Context) error {
 	time.Sleep(2 * time.Second)
 
 	if err := s.connect(); err != nil {
-		s.Stop()
+		_ = s.Stop()
 		return fmt.Errorf("failed to connect to NATS: %w", err)
 	}
 

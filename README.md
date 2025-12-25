@@ -196,7 +196,7 @@ curl -X POST http://localhost:8000/scrq/page/evaluate \
 version: "3.8"
 services:
   scrq:
-    image: ahrdadan/scrq:latest
+    image: ghcr.io/ahrdadan/scrq:latest
     ports:
       - "8000:8000"
     volumes:
@@ -215,6 +215,13 @@ git clone https://github.com/ahrdadan/scrq.git
 cd scrq
 docker build -t scrq:latest .
 docker run -p 8000:8000 scrq:latest
+```
+
+### Pull from GHCR
+
+```bash
+docker pull ghcr.io/ahrdadan/scrq:latest
+docker run -p 8000:8000 ghcr.io/ahrdadan/scrq:latest
 ```
 
 ## 📚 Documentation

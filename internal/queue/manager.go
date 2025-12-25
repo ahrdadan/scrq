@@ -253,7 +253,7 @@ func (m *Manager) processMessage(msg jetstream.Msg, processor JobProcessor) {
 	var job Job
 	if err := json.Unmarshal(msg.Data(), &job); err != nil {
 		log.Printf("Failed to unmarshal job: %v", err)
-		msg.Nak()
+		_ = msg.Nak()
 		return
 	}
 
@@ -261,12 +261,12 @@ func (m *Manager) processMessage(msg jetstream.Msg, processor JobProcessor) {
 	storedJob, err := m.store.Get(job.ID)
 	if err != nil {
 		log.Printf("Failed to get job from store: %v", err)
-		msg.Nak()
+		_ = msg.Nak()
 		return
 	}
 
 	if storedJob.Status == JobStatusCanceled {
-		msg.Ack()
+		_ = msg.Ack()
 		return
 	}
 
@@ -275,7 +275,7 @@ func (m *Manager) processMessage(msg jetstream.Msg, processor JobProcessor) {
 		waitUntil := time.Unix(storedJob.NextRetryAt, 0)
 		if time.Now().Before(waitUntil) {
 			// Re-queue with delay
-			msg.NakWithDelay(time.Until(waitUntil))
+			_ = msg.NakWithDelay(time.Until(waitUntil))
 			return
 		}
 	}
@@ -283,7 +283,7 @@ func (m *Manager) processMessage(msg jetstream.Msg, processor JobProcessor) {
 	// Update status to running
 	storedJob.SetStatus(JobStatusRunning)
 	storedJob.SetProgress(0, "Processing started")
-	m.UpdateJob(storedJob)
+	_ = m.UpdateJob(storedJob)
 
 	// Create context with timeout
 	timeout := storedJob.GetTimeoutDuration()
@@ -293,7 +293,7 @@ func (m *Manager) processMessage(msg jetstream.Msg, processor JobProcessor) {
 	// Process the job with progress callback that supports page X/Y
 	result, err := processor.Process(ctx, storedJob, func(progress int, message string) {
 		storedJob.SetProgress(progress, message)
-		m.UpdateJob(storedJob)
+		_ = m.UpdateJob(storedJob)
 	})
 
 	if err != nil {
@@ -301,7 +301,7 @@ func (m *Manager) processMessage(msg jetstream.Msg, processor JobProcessor) {
 		if storedJob.CanRetry() {
 			storedJob.LastError = err.Error()
 			storedJob.PrepareRetry()
-			m.UpdateJob(storedJob)
+			_ = m.UpdateJob(storedJob)
 
 			// Emit retry event
 			m.events.Emit(storedJob.ID, Event{
@@ -320,19 +320,19 @@ func (m *Manager) processMessage(msg jetstream.Msg, processor JobProcessor) {
 				log.Printf("Failed to re-enqueue job for retry: %v", pubErr)
 			}
 
-			msg.Ack()
+			_ = msg.Ack()
 			return
 		}
 
 		storedJob.SetError(err.Error())
-		m.UpdateJob(storedJob)
-		msg.Ack()
+		_ = m.UpdateJob(storedJob)
+		_ = msg.Ack()
 		return
 	}
 
 	storedJob.SetResult(result)
-	m.UpdateJob(storedJob)
-	msg.Ack()
+	_ = m.UpdateJob(storedJob)
+	_ = msg.Ack()
 }
 
 // JobProcessor defines the interface for processing jobs

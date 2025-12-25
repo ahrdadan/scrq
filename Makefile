@@ -12,7 +12,7 @@ BINARY_UNIX=$(BINARY_NAME)_linux
 
 # Build info
 VERSION ?= 1
-LDFLAGS=-ldflags "-X github.com/example/go-rod-fiber-lightpanda-starter/internal/config.Version=$(VERSION)"
+LDFLAGS=-ldflags "-X github.com/ahrdadan/scrq/internal/config.Version=$(VERSION)"
 
 # Main package path
 MAIN_PATH=./cmd/server
@@ -117,3 +117,4 @@ help:
 	@echo ""
 	@echo "Targets:"
 	@sed -n 's/^##//p' $(MAKEFILE_LIST) | column -t -s ':' | sed 's/^/  /'
+

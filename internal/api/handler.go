@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/example/go-rod-fiber-lightpanda-starter/internal/browser"
+	"github.com/ahrdadan/scrq/internal/browser"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -156,7 +156,7 @@ func (h *Handler) Screenshot(c *fiber.Ctx) error {
 	}
 
 	ctx := context.Background()
-	opts := buildPageOptions(req.RequestOptions, true)
+	opts := buildPageOptions(req.RequestOptions, false)
 	screenshot, err := h.browserManager.TakeScreenshot(ctx, req.URL, req.FullPage, opts)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
@@ -190,7 +190,7 @@ func (h *Handler) EvaluateScript(c *fiber.Ctx) error {
 	}
 
 	ctx := context.Background()
-	opts := buildPageOptions(req.RequestOptions, true)
+	opts := buildPageOptions(req.RequestOptions, false)
 	result, err := h.browserManager.EvaluateScript(ctx, req.URL, req.Script, opts)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
@@ -223,7 +223,7 @@ func (h *Handler) ClickElement(c *fiber.Ctx) error {
 	}
 
 	ctx := context.Background()
-	opts := buildPageOptions(req.RequestOptions, true)
+	opts := buildPageOptions(req.RequestOptions, false)
 	err := h.browserManager.ClickElement(ctx, req.URL, req.Selector, opts)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
@@ -256,7 +256,7 @@ func (h *Handler) FillForm(c *fiber.Ctx) error {
 	}
 
 	ctx := context.Background()
-	opts := buildPageOptions(req.RequestOptions, true)
+	opts := buildPageOptions(req.RequestOptions, false)
 	err := h.browserManager.FillForm(ctx, req.URL, req.Inputs, opts)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
@@ -316,7 +316,7 @@ func (h *Handler) GetPageInfo(c *fiber.Ctx) error {
 	}
 
 	ctx := context.Background()
-	opts := buildPageOptions(req.RequestOptions, true)
+	opts := buildPageOptions(req.RequestOptions, false)
 	result, err := h.browserManager.GetPageInfo(ctx, req.URL, opts)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
@@ -348,7 +348,7 @@ func (h *Handler) Scrape(c *fiber.Ctx) error {
 	}
 
 	ctx := context.Background()
-	opts := buildPageOptions(req.RequestOptions, req.Script != "")
+	opts := buildPageOptions(req.RequestOptions, false)
 
 	// If custom script provided, use it
 	if req.Script != "" {
@@ -418,7 +418,7 @@ func (h *Handler) BatchScrape(c *fiber.Ctx) error {
 	}
 
 	results := make([]BatchScrapeResult, len(req.URLs))
-	opts := buildPageOptions(req.RequestOptions, req.Script != "")
+	opts := buildPageOptions(req.RequestOptions, false)
 	var wg sync.WaitGroup
 	semaphore := make(chan struct{}, concurrent)
 
@@ -466,3 +466,4 @@ func (h *Handler) BatchScrape(c *fiber.Ctx) error {
 		},
 	})
 }
+

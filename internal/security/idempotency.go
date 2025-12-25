@@ -127,6 +127,6 @@ func VerifyWebhookSignature(payload []byte, signature, secret string) bool {
 // GenerateRequestID generates a unique request ID
 func GenerateRequestID() string {
 	bytes := make([]byte, 16)
-	rand.Read(bytes)
+	_, _ = rand.Read(bytes)
 	return hex.EncodeToString(bytes)
 }

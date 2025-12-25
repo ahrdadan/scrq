@@ -67,7 +67,7 @@ jobs:
       - name: Build Linux binary
         run: |
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-            -ldflags "-X github.com/example/go-rod-fiber-lightpanda-starter/internal/config.Version=${{ github.sha }}" \
+            -ldflags "-X github.com/ahrdadan/scrq/internal/config.Version=${{ github.sha }}" \
             -o server-linux-amd64 \
             ./cmd/server
 

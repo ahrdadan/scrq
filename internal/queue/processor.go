@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/example/go-rod-fiber-lightpanda-starter/internal/browser"
+	"github.com/ahrdadan/scrq/internal/browser"
 )
 
 // ScrapeProcessor processes scrape jobs
@@ -227,3 +227,4 @@ func sendWebhook(jobID, webhookURL, status string) {
 		log.Printf("Webhook returned error status: %d", resp.StatusCode)
 	}
 }
+

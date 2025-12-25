@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/example/go-rod-fiber-lightpanda-starter/internal/api"
+	"github.com/ahrdadan/scrq/internal/api"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -235,3 +235,4 @@ func TestInvalidJSON(t *testing.T) {
 		t.Errorf("Expected status 400, got %d", resp.StatusCode)
 	}
 }
+

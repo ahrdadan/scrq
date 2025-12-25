@@ -19,7 +19,7 @@ ARG BUILD_TIME=unknown
 
 # Build the binary
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-    -ldflags "-X github.com/example/go-rod-fiber-lightpanda-starter/internal/config.Version=${VERSION}" \
+    -ldflags "-X github.com/ahrdadan/scrq/internal/config.Version=${VERSION}" \
     -o server ./cmd/server
 
 # Runtime stage
@@ -68,3 +68,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Run the server
 ENTRYPOINT ["./server"]
 CMD ["--host", "0.0.0.0", "--port", "8000"]
+

@@ -3,9 +3,9 @@ package api
 import (
 	"time"
 
-	"github.com/example/go-rod-fiber-lightpanda-starter/internal/browser"
-	"github.com/example/go-rod-fiber-lightpanda-starter/internal/queue"
-	"github.com/example/go-rod-fiber-lightpanda-starter/internal/security"
+	"github.com/ahrdadan/scrq/internal/browser"
+	"github.com/ahrdadan/scrq/internal/queue"
+	"github.com/ahrdadan/scrq/internal/security"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
 )
@@ -51,10 +51,17 @@ func SetupJobRoutes(app *fiber.App, queueManager *queue.Manager) {
 // SetupJobRoutesWithConfig configures job queue routes with custom config
 func SetupJobRoutesWithConfig(app *fiber.App, queueManager *queue.Manager, config RouteConfig) {
 	// Create security stores
-	rateLimiter := security.NewRateLimiter(config.RateLimitRequests, config.RateLimitWindow)
+	rateLimiter := security.NewRateLimiter(security.RateLimitConfig{
+		RequestsPerWindow: config.RateLimitRequests,
+		WindowDuration:    config.RateLimitWindow,
+		BurstMax:          20,
+	})
 	idempotencyStore := security.NewIdempotencyStore(config.IdempotencyTTL)
 
 	jobHandler := NewJobHandlerWithSecurity(queueManager, idempotencyStore)
+
+	// Create security middleware
+	secMiddleware := security.NewMiddleware(rateLimiter, idempotencyStore)
 
 	scrq := app.Group("/scrq")
 
@@ -63,7 +70,7 @@ func SetupJobRoutesWithConfig(app *fiber.App, queueManager *queue.Manager, confi
 
 	// Job queue endpoints with rate limiting
 	jobsGroup := scrq.Group("/jobs")
-	jobsGroup.Use(security.RateLimitMiddleware(rateLimiter))
+	jobsGroup.Use(secMiddleware.RateLimitMiddleware())
 
 	jobsGroup.Post("", jobHandler.CreateJob)
 	jobsGroup.Get("/:job_id", jobHandler.GetJobStatus)
@@ -86,7 +93,14 @@ func SetupSecureRoutes(app *fiber.App, browserManager browser.Client, config Rou
 	handler := NewHandler(browserManager)
 
 	// Create rate limiter
-	rateLimiter := security.NewRateLimiter(config.RateLimitRequests, config.RateLimitWindow)
+	rateLimiter := security.NewRateLimiter(security.RateLimitConfig{
+		RequestsPerWindow: config.RateLimitRequests,
+		WindowDuration:    config.RateLimitWindow,
+		BurstMax:          20,
+	})
+
+	// Create security middleware
+	secMiddleware := security.NewMiddleware(rateLimiter, nil)
 
 	// Health check (no rate limit)
 	app.Get("/health", handler.HealthCheck)
@@ -94,7 +108,7 @@ func SetupSecureRoutes(app *fiber.App, browserManager browser.Client, config Rou
 	// Scrq routes with security
 	scrq := app.Group("/scrq")
 	scrq.Use(security.SecurityHeadersMiddleware())
-	scrq.Use(security.RateLimitMiddleware(rateLimiter))
+	scrq.Use(secMiddleware.RateLimitMiddleware())
 
 	registerRoutes(scrq, handler)
 }

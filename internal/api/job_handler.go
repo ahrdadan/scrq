@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/example/go-rod-fiber-lightpanda-starter/internal/queue"
-	"github.com/example/go-rod-fiber-lightpanda-starter/internal/security"
+	"github.com/ahrdadan/scrq/internal/queue"
+	"github.com/ahrdadan/scrq/internal/security"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
 )
@@ -123,7 +123,7 @@ func (h *JobHandler) CreateJob(c *fiber.Ctx) error {
 
 	// Cache response for idempotency
 	if idempotencyKey != "" && h.idempotencyStore != nil && !wasDuplicate {
-		h.idempotencyStore.Store(idempotencyKey, response)
+		h.idempotencyStore.Store(idempotencyKey, enqueuedJob.ID, response)
 	}
 
 	if wasDuplicate {
@@ -301,7 +301,7 @@ func (h *JobHandler) StreamEvents(c *fiber.Ctx) error {
 func (h *JobHandler) HandleWebSocket(c *websocket.Conn) {
 	jobID := c.Query("job_id")
 	if jobID == "" {
-		c.WriteJSON(map[string]interface{}{
+		_ = c.WriteJSON(map[string]interface{}{
 			"error": "job_id is required",
 		})
 		c.Close()
@@ -311,7 +311,7 @@ func (h *JobHandler) HandleWebSocket(c *websocket.Conn) {
 	// Check if job exists
 	job, err := h.queueManager.GetJob(jobID)
 	if err != nil {
-		c.WriteJSON(map[string]interface{}{
+		_ = c.WriteJSON(map[string]interface{}{
 			"error": "job not found",
 		})
 		c.Close()
@@ -319,7 +319,7 @@ func (h *JobHandler) HandleWebSocket(c *websocket.Conn) {
 	}
 
 	// Send initial status
-	c.WriteJSON(queue.Event{
+	_ = c.WriteJSON(queue.Event{
 		JobID:    job.ID,
 		Status:   job.Status,
 		Progress: job.Progress,

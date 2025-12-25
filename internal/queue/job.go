@@ -66,6 +66,12 @@ type ProgressInfo struct {
 	Total   int    `json:"total"`   // Total items (e.g., 20 pages)
 	Percent int    `json:"percent"` // Percentage complete (0-100)
 	Message string `json:"message"` // Human-readable message
+
+	Stage       string `json:"stage,omitempty"`
+	CurrentPage int    `json:"current_page,omitempty"`
+	TotalPages  int    `json:"total_pages,omitempty"`
+	CurrentItem int    `json:"current_item,omitempty"`
+	TotalItems  int    `json:"total_items,omitempty"`
 }
 
 // JobRequest represents a job creation request
