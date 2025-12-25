@@ -10,7 +10,7 @@ permissions:
   packages: write
 
 env:
-  GOPRIVATE: github.com/ahrdadan/scrq
+  GOPROXY: "https://proxy.golang.org,direct"
 
 jobs:
   build:
@@ -32,10 +32,8 @@ jobs:
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
-      - name: Verify module
-        run: |
-          go mod verify
-          go mod download
+      - name: Download dependencies
+        run: go mod download
 
       - name: Run tests
         run: go test -v ./...
