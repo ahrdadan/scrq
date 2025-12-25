@@ -51,12 +51,12 @@ func (h *JobHandler) CreateJob(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body")
 	}
 
-	if req.URL == "" {
+	if req.JobRequest.URL == "" {
 		return fiber.NewError(fiber.StatusBadRequest, "URL is required")
 	}
 
-	if req.Type == "" {
-		req.Type = queue.JobTypeScrape
+	if req.JobRequest.Type == "" {
+		req.JobRequest.Type = queue.JobTypeScrape
 	}
 
 	// Check idempotency key from header or body
