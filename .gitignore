@@ -4,8 +4,8 @@
 *.dll
 *.so
 *.dylib
-server
-server_linux
+/server
+/server_linux
 *.bak
 
 # Test binary
